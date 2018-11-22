@@ -4,6 +4,10 @@ import java.util.List;
 
 import com.liferay.portal.kernel.util.PwdGenerator;
 
+import posadas_wc_sb.model.WebContent;
+import posadas_wc_sb.service.WebContentLocalService;
+import posadas_wc_sb.service.WebContentLocalServiceUtil;
+
 
 
 public class MappingString {
@@ -61,6 +65,27 @@ public class MappingString {
 		}
 		
 		return dynamicElement;
+	}
+	
+	public String DynamicElementRateLink(String name,String type,String index, String es, String en){
+		String dynamicRateLink = "";
+		WebContentLocalService service = WebContentLocalServiceUtil.getService();
+		
+		List<WebContent> contents = new ArrayList<WebContent>();
+		
+		List<WebContent> con = service.getWebContents();
+		
+		for(WebContent webContent: con){
+			if(webContent.isNew()){
+				contents.add(webContent);
+			}
+		}
+		
+		for(WebContent cont: contents){
+			dynamicRateLink+="<dynamic-element name=\""+name+"\"  instance-id=\""+generateInstanceId()+"\" type=\""+type+"\" index-type=\""+index+"\">"+getDynamicContentRateLink(es, en,cont.getClasspk())+
+					  "</dynamic-element>"; 
+		}
+		return dynamicRateLink;
 	}
 	
 	public String generateInstanceId() {

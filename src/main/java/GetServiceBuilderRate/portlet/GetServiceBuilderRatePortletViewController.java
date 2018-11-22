@@ -898,7 +898,8 @@ public class GetServiceBuilderRatePortletViewController {
 												_dynamics.getDynamicContent("", "")
 												)+
 										_dynamics.getDynamicContent("", "")
-										)
+										)+
+								_dynamics.DynamicElementRateLink("MediaLinkFooterBrand", "document_library", "keyword", "", "")
 								)+
 						_dynamics.DynamicElement("ratelinksBrand", "selection_break", "keyword", 
 								_dynamics.DynamicElement("ratelinkBrand", "ddm-journal-article", "keyword", 

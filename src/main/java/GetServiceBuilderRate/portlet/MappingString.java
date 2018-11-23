@@ -8,8 +8,6 @@ import posadas_wc_sb.model.WebContent;
 import posadas_wc_sb.service.WebContentLocalService;
 import posadas_wc_sb.service.WebContentLocalServiceUtil;
 
-
-
 public class MappingString {
 	
 
@@ -75,15 +73,20 @@ public class MappingString {
 		
 		List<WebContent> con = service.getWebContents();
 		
+		System.out.println("Antes del bucle");
+		System.out.println("Tamaño lista:   "  + con.size());
 		for(WebContent webContent: con){
-			if(webContent.isNew()){
+			System.out.println("Datos del servicio: "+"Marca: "+ webContent.getBrand()+"ClassPk: "+ webContent.getClasspk() );
+			if(webContent.getBrand().equals("FI")){
+				System.out.println("Entro a la validacion");
 				contents.add(webContent);
 			}
 		}
-		
+		System.out.println("Tamaño de nueva lista: "+ contents.size());
 		for(WebContent cont: contents){
-			dynamicRateLink+="<dynamic-element name=\""+name+"\"  instance-id=\""+generateInstanceId()+"\" type=\""+type+"\" index-type=\""+index+"\">"+getDynamicContentRateLink(es, en,cont.getClasspk())+
+			dynamicRateLink+="<dynamic-element name=\""+name+"\"  instance-id=\""+generateInstanceId()+"\" type=\""+type+"\" index-type=\""+index+"\">"+getDynamicContentRateLink(es, en, cont.getClasspk())+
 					  "</dynamic-element>"; 
+			System.out.println("Nuevo contenido: "+ dynamicRateLink);
 		}
 		return dynamicRateLink;
 	}

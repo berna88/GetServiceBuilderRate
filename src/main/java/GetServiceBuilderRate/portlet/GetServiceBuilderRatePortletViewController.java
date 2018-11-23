@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.portlet.RenderRequest;
@@ -23,6 +24,11 @@ import com.consistent.models.rate.Medialink;
 import com.consistent.models.rate.Medialinks;
 import com.consistent.models.rate.Multimedia;
 import com.consistent.models.rate.Rate;
+import com.liferay.journal.model.JournalArticle;
+import com.liferay.journal.model.JournalArticleConstants;
+import com.liferay.journal.service.JournalArticleLocalServiceUtil;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 
 /**
@@ -35,25 +41,26 @@ public class GetServiceBuilderRatePortletViewController {
 	@RenderMapping
 	public String view(RenderRequest request, RenderResponse response) throws JAXBException {
 		
-		String[] args = new String[10];
+		
+		//String[] args = new String[10];
 		
 		JAXBContext context = JAXBContext.newInstance(Contents.class);
 		Unmarshaller unmarshaller = context.createUnmarshaller();
 		String _rate_en = "/Users/bernardohernandez/Downloads/ratesenglsih.xml";
 		String _rate_es = "/Users/bernardohernandez/Downloads/ratesSpanish.xml";
 		
-		List<Rate> rateEngList = new ArrayList<>();
-		List<Rate> rateSpaList = new ArrayList<>();
+		//List<Rate> rateEngList = new ArrayList<>();
+		//List<Rate> rateSpaList = new ArrayList<>();
 		
 		//String _rateTwo = "";
 		if(_rate_en!= null && !_rate_en.equals("")){
 			Contents contentsEng = (Contents) unmarshaller.unmarshal(new File(_rate_en));
 			Contents contentsSpa = (Contents) unmarshaller.unmarshal(new File(_rate_es));
 			
-			System.out.println("Mi marca: "+ getBrand(contentsEng));
-			System.out.println("XML de marca"+ getXmlBrand(contentsSpa, contentsEng));
+			//System.out.println("Mi marca: "+ getBrand(contentsEng));
+			System.out.println("XML de marca: "+ getXmlBrand(contentsSpa, contentsEng));
 			
-			System.out.println("contentsEng.getContents().size() : "+ contentsEng.getContents().size());
+			/*System.out.println("contentsEng.getContents().size() : "+ contentsEng.getContents().size());
 			System.out.println("contentsEng.getContents().get(0).getBrands().size() : " + contentsEng.getContents().get(0).getBrands().get(0).getCode());
 			
 			
@@ -162,13 +169,103 @@ public class GetServiceBuilderRatePortletViewController {
 				//System.out.println(getRate(rateOnly, rateOnly));
 			}
 				
-			
+			*/
 			}
 		
 	
 		return "view";
 	}
+
+	public static String getXmlBrand(Contents contents_es, Contents contents_en){
+		System.out.println("Entrando en el XML de Brand");
+		Map<String, String> mapBrand = new HashMap<>();
+		
+		if(contents_es!=null && !contents_es.equals("")){
+			for(Content content : contents_es.getContents()){
+				if(content!=null && !content.equals("")){
+					for(Brand brand : content.getBrands()){
+						mapBrand.put("code_es", brand.getCode());
+						mapBrand.put("name_es", brand.getName());
+					}
+				}
+			}
+		}
+		if(contents_en!=null && !contents_en.equals("")){
+			for(Content content : contents_en.getContents()){
+				if(content!=null && !content.equals("")){
+					for(Brand brand : content.getBrands()){
+						mapBrand.put("code_en", brand.getCode());
+						mapBrand.put("name_en", brand.getName());
+					}
+				}
+			}
+		}
+		
+		
+		
+		MappingString _dynamics = new MappingString();
+		System.out.println("Entrando al metodo de getRateLink");
+		System.out.println("Datos dinamicos: "+_dynamics.DynamicElementRateLink("MediaLinkFooterBrand", "document_library", "keyword", "", ""));
+		String rateLink = _dynamics.DynamicElementRateLink("ratelinkBrand", "ddm-journal-article", "keyword", "", "");
+		String brand = _dynamics.DynamicHeader(
+				_dynamics.DynamicElement("brand", "selection_break", "keyword", 
+						_dynamics.DynamicElement("codeBrand", "text", "keyword", 
+								_dynamics.getDynamicContent(mapBrand.get("code_es"), mapBrand.get("code_en"))
+								)+
+						_dynamics.DynamicElement("nameBrand", "text", "keyword", 
+								_dynamics.getDynamicContent(mapBrand.get("name_es"), mapBrand.get("name_en"))
+								)+
+						_dynamics.DynamicElement("keywordBrand", "text", "keyword", 
+								_dynamics.getDynamicContent("", "")
+								)+
+						_dynamics.DynamicElement("descriptionsBrand", "selection_break", "keyword", 
+								_dynamics.DynamicElement("descriptionBrand", "text_area", "text", 
+										_dynamics.getDynamicContent("", "")
+										)+
+								_dynamics.DynamicElement("shortDescriptionBrand", "text_area", "text", 
+										_dynamics.getDynamicContent("", "")
+										)
+								)+
+						_dynamics.DynamicElement("sloganBrand", "text", "keyword", 
+								_dynamics.getDynamicContent("", "")
+								)+
+						_dynamics.DynamicElement("productsBrand", "text_area", "text", 
+								_dynamics.getDynamicContent("", "")
+								)+
+						_dynamics.DynamicElement("servicesBrand", "text_area", "text", 
+								_dynamics.getDynamicContent("", "")
+								)+
+						_dynamics.DynamicElement("featureBrand", "text_area", "text", 
+								_dynamics.getDynamicContent("", "")
+								)+
+						_dynamics.DynamicElement("medialinksBrand", "selection_break", "keyword", 
+								_dynamics.DynamicElement("MediaLinkFooterBrand", "document_library", "keyword", 
+										_dynamics.DynamicElement("typeBrand", "list", "keyword", 
+												_dynamics.getDynamicContent("", "")
+												)+
+										_dynamics.DynamicElement("Pie", "text", "keyword", 
+												_dynamics.getDynamicContent("", "")
+												)+
+										_dynamics.getDynamicContent("", "")
+										)
+								//_dynamics.DynamicElementRateLink("MediaLinkFooterBrand", "document_library", "keyword", "", "")
+								)+
+						_dynamics.DynamicElement("ratelinksBrand", "selection_break", "keyword", 
+								_dynamics.DynamicElement("ratelinkBrand", "ddm-journal-article", "keyword", 
+										_dynamics.getDynamicContent("", "")
+										)+
+								rateLink
+								)
+						)
+				);
+		
+		return brand;
+	}
 	
+	
+	
+	
+/*	
 	public static void getRateUrl(Rate rate){
 		if(rate!=null && !rate.equals("")){
 			if(!rate.getMedialinks().isEmpty() && !rate.getMedialinks().equals("") && rate.getMedialinks() != null){
@@ -191,6 +288,9 @@ public class GetServiceBuilderRatePortletViewController {
 	}
 	
 	public static String getBrand(Contents contents){
+
+
+		
 		String miMarca = "";
 		if(contents!=null && !contents.equals("")){
 			for(Content content: contents.getContents()){
@@ -205,6 +305,9 @@ public class GetServiceBuilderRatePortletViewController {
 		}
 		return miMarca;
 	}
+
+*/	
+/*
 	public static String getRate(Rate rate_es, Rate rate_en){
 
 		MappingString _dynamics = new MappingString();
@@ -830,89 +933,9 @@ public class GetServiceBuilderRatePortletViewController {
 				return rate;
 
 			}
+*/	
+
 	
-	public static String getXmlBrand(Contents contents_es, Contents contents_en){
-		Map<String, String> mapBrand = new HashMap<>();
-		
-		if(contents_es!=null && !contents_es.equals("")){
-			for(Content content : contents_es.getContents()){
-				if(content!=null && !content.equals("")){
-					for(Brand brand : content.getBrands()){
-						mapBrand.put("code_es", brand.getCode());
-						mapBrand.put("name_es", brand.getName());
-					}
-				}
-			}
-		}
-		if(contents_en!=null && !contents_en.equals("")){
-			for(Content content : contents_en.getContents()){
-				if(content!=null && !content.equals("")){
-					for(Brand brand : content.getBrands()){
-						mapBrand.put("code_en", brand.getCode());
-						mapBrand.put("name_en", brand.getName());
-					}
-				}
-			}
-		}
-		
-		
-		
-		MappingString _dynamics = new MappingString();
-		String brand = _dynamics.DynamicHeader(
-				_dynamics.DynamicElement("brand", "selection_break", "keyword", 
-						_dynamics.DynamicElement("codeBrand", "text", "keyword", 
-								_dynamics.getDynamicContent(mapBrand.get("code_es"), mapBrand.get("code_en"))
-								)+
-						_dynamics.DynamicElement("nameBrand", "text", "keyword", 
-								_dynamics.getDynamicContent(mapBrand.get("name_es"), mapBrand.get("name_en"))
-								)+
-						_dynamics.DynamicElement("keywordBrand", "text", "keyword", 
-								_dynamics.getDynamicContent("", "")
-								)+
-						_dynamics.DynamicElement("descriptionsBrand", "selection_break", "keyword", 
-								_dynamics.DynamicElement("descriptionBrand", "text_area", "text", 
-										_dynamics.getDynamicContent("", "")
-										)+
-								_dynamics.DynamicElement("shortDescriptionBrand", "text_area", "text", 
-										_dynamics.getDynamicContent("", "")
-										)
-								)+
-						_dynamics.DynamicElement("sloganBrand", "text", "keyword", 
-								_dynamics.getDynamicContent("", "")
-								)+
-						_dynamics.DynamicElement("productsBrand", "text_area", "text", 
-								_dynamics.getDynamicContent("", "")
-								)+
-						_dynamics.DynamicElement("servicesBrand", "text_area", "text", 
-								_dynamics.getDynamicContent("", "")
-								)+
-						_dynamics.DynamicElement("featureBrand", "text_area", "text", 
-								_dynamics.getDynamicContent("", "")
-								)+
-						_dynamics.DynamicElement("medialinksBrand", "selection_break", "keyword", 
-								_dynamics.DynamicElement("MediaLinkFooterBrand", "document_library", "keyword", 
-										_dynamics.DynamicElement("typeBrand", "list", "keyword", 
-												_dynamics.getDynamicContent("", "")
-												)+
-										_dynamics.DynamicElement("Pie", "text", "keyword", 
-												_dynamics.getDynamicContent("", "")
-												)+
-										_dynamics.getDynamicContent("", "")
-										)+
-								_dynamics.DynamicElementRateLink("MediaLinkFooterBrand", "document_library", "keyword", "", "")
-								)+
-						_dynamics.DynamicElement("ratelinksBrand", "selection_break", "keyword", 
-								_dynamics.DynamicElement("ratelinkBrand", "ddm-journal-article", "keyword", 
-										_dynamics.getDynamicContent("", "")
-										)
-								)
-						)
-				);
-		
-		return brand;
-	}
 	
-	public void Service(){
-		
-	}
+	
 }

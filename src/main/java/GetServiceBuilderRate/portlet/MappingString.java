@@ -77,7 +77,7 @@ public class MappingString {
 		System.out.println("Tamaño lista:   "  + con.size());
 		for(WebContent webContent: con){
 			System.out.println("Datos del servicio: "+"Marca: "+ webContent.getBrand()+"ClassPk: "+ webContent.getClasspk() );
-			if(webContent.getBrand().equals("FI")){
+			if(webContent.getBrand().equals("FI") ){
 				System.out.println("Entro a la validacion");
 				contents.add(webContent);
 			}

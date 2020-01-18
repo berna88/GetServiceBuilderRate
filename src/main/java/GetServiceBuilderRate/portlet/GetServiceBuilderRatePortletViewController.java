@@ -27,8 +27,15 @@ import com.consistent.models.rate.Rate;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
+import com.liferay.journal.service.JournalArticleServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.model.DDMTemplate;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
+import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 
 
 /**
@@ -39,10 +46,13 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 public class GetServiceBuilderRatePortletViewController {
 
 	@RenderMapping
-	public String view(RenderRequest request, RenderResponse response) throws JAXBException {
+	public String view(RenderRequest request, RenderResponse response) throws Exception {
 		
 		
 		//String[] args = new String[10];
+		ThemeDisplay themeDisplay = (ThemeDisplay) request.getAttribute(WebKeys.THEME_DISPLAY);
+		long userId = themeDisplay.getUserId();
+		long groupId = themeDisplay.getScopeGroupId();
 		
 		JAXBContext context = JAXBContext.newInstance(Contents.class);
 		Unmarshaller unmarshaller = context.createUnmarshaller();
@@ -59,6 +69,9 @@ public class GetServiceBuilderRatePortletViewController {
 			
 			//System.out.println("Mi marca: "+ getBrand(contentsEng));
 			System.out.println("XML de marca: "+ getXmlBrand(contentsSpa, contentsEng));
+			addJournalArticle(userId, groupId, contentsEng.getContents().get(0).getBrands().get(0).getCode(), getXmlBrand(contentsSpa, contentsEng), themeDisplay);
+		
+			
 			
 			/*System.out.println("contentsEng.getContents().size() : "+ contentsEng.getContents().size());
 			System.out.println("contentsEng.getContents().get(0).getBrands().size() : " + contentsEng.getContents().get(0).getBrands().get(0).getCode());
@@ -205,7 +218,6 @@ public class GetServiceBuilderRatePortletViewController {
 		
 		MappingString _dynamics = new MappingString();
 		System.out.println("Entrando al metodo de getRateLink");
-		System.out.println("Datos dinamicos: "+_dynamics.DynamicElementRateLink("MediaLinkFooterBrand", "document_library", "keyword", "", ""));
 		String rateLink = _dynamics.DynamicElementRateLink("ratelinkBrand", "ddm-journal-article", "keyword", "", "");
 		String brand = _dynamics.DynamicHeader(
 				_dynamics.DynamicElement("brand", "selection_break", "keyword", 
@@ -935,6 +947,39 @@ public class GetServiceBuilderRatePortletViewController {
 			}
 */	
 
+	public static JournalArticle addJournalArticle(long userId, long groupId, String title, String miXml, ThemeDisplay themeDisplay) throws Exception{
+		
+		ServiceContext serviceContext = new ServiceContext();
+		serviceContext.setAddGroupPermissions(true);
+		serviceContext.setAddGuestPermissions(true);
+		serviceContext.setScopeGroupId(groupId);
+		serviceContext.setWorkflowAction(WorkflowConstants.ACTION_PUBLISH);
+		Map<Locale, String> titleMap = new HashMap<Locale, String>();
+		//Map<Locale, String> descriptionMap = new HashMap<Locale,String>();
+		
+		titleMap.put(themeDisplay.getLocale(), title);
+		//descriptionMap.put(Locale.US, title);
+		
+		try {
+			JournalArticleLocalServiceUtil.deleteArticle(groupId, title, serviceContext);
+		} catch (Exception ex) {
+			// TODO: handle exception
+			System.out.println("Ignoring "+ ex.getMessage());
+		}
+		
+		String xmlContent = miXml;
+		System.out.println("Antes de ingresar al metodo de agregar estructura");
+		//Creación de estructura
+		DDMStructure ddmStructure;
+		
+		ddmStructure = DDMStructureLocalServiceUtil.getDDMStructure(33571);
+		
+		DDMTemplate ddmTemplate = DDMTemplateLocalServiceUtil.getDDMTemplate(33604);
+		
+		JournalArticle article = JournalArticleLocalServiceUtil.addArticle(
+				userId, groupId, 0, titleMap, null, xmlContent, ddmStructure.getStructureKey(), ddmTemplate.getTemplateKey(), serviceContext);
+				return article;
+	}
 	
 	
 	
